@@ -42,7 +42,6 @@ pipeline {
             }
         }
 
-
         stage('Docker Build & Push') {
             steps {
                 script {
@@ -86,6 +85,14 @@ pipeline {
     }
 
     post {
-        echo "Deployment completed successfully!"
+        success {
+            echo "Deployment completed successfully!"
+        }
+        failure {
+            echo "Deployment failed! Please check the Jenkins logs."
+        }
+        always {
+            echo "Pipeline execution finished."
+        }
     }
 }
