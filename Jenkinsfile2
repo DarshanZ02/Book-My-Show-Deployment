@@ -55,30 +55,25 @@ pipeline {
             }
         }
 
-        stage('Deploy to EKS Cluster') {
-            steps {
-                script {
-                    withCredentials([file(credentialsId: 'k8s-config', variable: 'KUBECONFIG')]) {
-                        sh '''
-                        echo "Verifying AWS credentials..."
-                        aws sts get-caller-identity
-
-                        echo "Using Kubeconfig from Jenkins..."
-                        kubectl config view
-
-                        echo "Deploying application to EKS..."
-                        kubectl apply -f deployment.yml
-                        kubectl apply -f service.yml
-
-                        echo "Verifying deployment..."
-                        kubectl get pods
-                        kubectl get svc
-                        '''
-                    }
-
-                }
+       stage('Deploy to EKS Cluster') {
+    steps {
+        script {
+            withCredentials([[
+                $class: 'AmazonWebServicesCredentialsBinding',
+                credentialsId: 'aws-cred'
+            ]]) {
+                sh '''
+                    echo "Verifying AWS credentials..."
+                    aws sts get-caller-identity
+                    aws eks update-kubeconfig --name bms-eks --region us-east-1
+                    kubectl apply -f deployment.yml
+                    kubectl apply -f service.yml
+                '''
             }
         }
+    }
+}
+
     }
 
     post {
